@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String               @id @default(uuid())
+  name             String
+  email            String               @unique
+  password         String
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  platform_modules UserPlatformModule[]
+  roles            UserRole[]
+  code             UserValidationCode?
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(256)
+  description String     @db.VarChar(256)
+  users       UserRole[]
+}
+
+model PlatformModule {
+  id          Int                  @id @default(autoincrement())
+  name        String               @db.VarChar(256)
+  description String               @db.VarChar(256)
+  users       UserPlatformModule[]
+}
+
+model UserPlatformModule {
+  user_id            String
+  platform_module_id Int
+  platform_module    PlatformModule @relation(fields: [platform_module_id], references: [id])
+  user               User           @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, platform_module_id])
+}
+
+model UserValidationCode {
+  id      Int    @id @default(autoincrement())
+  code    String @db.VarChar
+  user_id String @unique
+  user    User   @relation(fields: [user_id], references: [id])
+}
+
+model UserRole {
+  user_id String
+  role_id Int
+  role    Role   @relation(fields: [role_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, role_id])
+}

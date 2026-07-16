@@ -1,0 +1,47 @@
+services:
+  postgres_db:
+    image: postgres:18.4-trixie
+    container_name: postgres_db
+    restart: always
+    environment:
+      DATABASE_HOST: 127.0.0.1
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: plataforma-c22
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/18/docker
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_web
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@correo.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "80:80"
+    depends_on:
+      - postgres_db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  mailpit:
+    image: axllent/mailpit:v1.30
+    container_name: mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      - MP_MAX_MESSAGES=5000
+      - MP_SMTP_AUTH=admin:password
+      - MP_SMTP_AUTH_ALLOW_INSECURE=true
+    volumes:
+      - mailpit-data:/data
+
+volumes:
+  pgdata:
+  pgadmin_data:
+  mailpit-data:

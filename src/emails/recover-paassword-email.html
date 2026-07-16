@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .main-container {
+            width: 100%;
+            padding: 2rem;
+            line-height: 2rem;
+        }
+
+        span {
+            color: purple;
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <h3>Código de validación</h3>
+        <p>El código para restablecer tu contraseña es: </p>
+        <span>{{recover_code}}</span>
+    </div>
+</body>
+
+</html>
