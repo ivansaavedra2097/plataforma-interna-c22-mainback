@@ -41,7 +41,7 @@ export const authRoutes = new Elysia()
                 const user_id = await AuthService.validateRecoverPasswordCode(body);
                 const jwtRecoverToken = await authJwt.sign({ value: user_id, exp: '5m' });
                 recoverToken.value = jwtRecoverToken;
-                return status(200);
+                return status(200, { success: true });
             }, AuthModelValidations.validateRecoveryCode)
 
 

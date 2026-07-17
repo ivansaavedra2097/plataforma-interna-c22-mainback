@@ -43,7 +43,7 @@ export class AuthService {
         });
 
         if (!user) {
-            throw status(400,{
+            throw status(400, {
                 success: false,
                 error: { message: 'Invalid email or password' satisfies AuthModel['generateRecoverCodeInvalid'] }
             })
@@ -72,9 +72,9 @@ export class AuthService {
             to: user.email,
             vars: { recover_code: recoverNumber }
         });
-        
+
         if (!isEmailSended) {
-            throw status(500,{
+            throw status(500, {
                 success: false,
                 error: { message: 'Error at sending recover password code' }
             });
@@ -87,11 +87,17 @@ export class AuthService {
             where: { user: { email } }
         });
 
-        if (!validationCode) throw status(404, 'El código expiró o es incorrecto');
+        if (!validationCode) throw status(404, {
+            success: false,
+            error: { message: 'El código expiró o es incorrecto' }
+        });
 
         const isValid = Bun.password.verifySync(`${code}`, validationCode.code);
 
-        if (!isValid) throw status(404, 'El código expiró o es incorrecto');
+        if (!isValid) throw status(404, {
+            success: false,
+            error: { message: 'El código expiró o es incorrecto' }
+        });
 
         await prisma.userValidationCode.delete({ where: { id: validationCode.id } });
 

@@ -24,7 +24,8 @@ describe('Test api/auth endpoint', () => {
             userValidationCode: {
                 findUnique: ValidationCodeMock.findUnique,
                 delete: ValidationCodeMock.delete,
-                create: ValidationCodeMock.create
+                create: ValidationCodeMock.create,
+                findFirst: ValidationCodeMock.findFirst
             }
         }
     }));
@@ -202,7 +203,7 @@ describe('Test api/auth endpoint', () => {
 
         test('Should response 500 if sendMail fail', async () => {
 
-            sendMailMock.mockResolvedValue( false );
+            sendMailMock.mockResolvedValue(false);
 
             const response = await app.handle(new Request(generateRecoveryCodePath, {
                 body: JSON.stringify({ email: AUTH_MOCKS.email }),
@@ -214,11 +215,70 @@ describe('Test api/auth endpoint', () => {
 
             const responseJson = await response.json();
 
-            expect( response.status ).toBe(500);
+            expect(response.status).toBe(500);
             expect(responseJson.success).toBeFalse();
-            expect( responseJson.error.message).toBe('Error at sending recover password code');
+            expect(responseJson.error.message).toBe('Error at sending recover password code');
         });
 
     });
 
+    describe('api/auth/validate-recovery-code path', () => {
+
+        test('Should validate-recovery-code successfully', async () => {
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.VALIDATE_RECOVER_CODE, {
+                body: JSON.stringify({ code: String(AUTH_MOCKS.recoverNumber), email: AUTH_MOCKS.email }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': AUTH_MOCKS.authCookie
+                }
+            }));
+
+            const cookies = response.headers.get('set-cookie');
+
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(cookies).toContain('recoverToken=');
+            expect(responseJson.success).toBeTrue();
+        });
+
+        test('Should return 404 if user not found, wrong email', async () => {
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.VALIDATE_RECOVER_CODE, {
+                body: JSON.stringify({ code: String(AUTH_MOCKS.recoverNumber), email: 'wrongemail@mail.com' }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': AUTH_MOCKS.authCookie
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(404);
+            expect(responseJson.success).toBeFalse();
+            expect(responseJson.error.message).toBe('El código expiró o es incorrecto');
+        });
+
+        test('Should return 404 if the verification code is wrong doesnt exists', async () => {
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.VALIDATE_RECOVER_CODE, {
+                body: JSON.stringify({ code: String(987653), email: AUTH_MOCKS.email }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': AUTH_MOCKS.authCookie
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(404);
+            expect(responseJson.success).toBeFalse();
+            expect(responseJson.error.message).toBe('El código expiró o es incorrecto');
+        });
+    });
+
+    describe('api/auth/recover-password path', () => {
+        
+    })
 });
