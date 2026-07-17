@@ -1,15 +1,6 @@
-import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
+import { afterEach, describe, expect, Mock, mock, spyOn, test } from "bun:test";
 import { app } from "../../src";
-import { prisma } from "../../src/prisma/db";
-
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    password: string;
-    updatedAt: string;
-    createdAt: string;
-}
+import { AUTH_MOCKS, ValidationCodeMock } from "./mocks/auth";
 
 const userMock = {
     id: 'asdfasgasgdasdg',
@@ -20,20 +11,35 @@ const userMock = {
     updatedAt: '2026-07-14 05:15:01.616'
 }
 
-interface ResponseLoginFail {
-    value: Response;
-}
-
 describe('Test api/auth endpoint', () => {
 
+    //*PRISMA MOCK
     mock.module("../../src/prisma/db", () => ({
         prisma: {
             user: {
                 findUnique: mock(({ where: { email } }) => Promise.resolve(
                     email === userMock.email ? userMock : null
                 ))
+            },
+            userValidationCode: {
+                findUnique: ValidationCodeMock.findUnique,
+                delete: ValidationCodeMock.delete,
+                create: ValidationCodeMock.create
             }
         }
+    }));
+
+    //*FUNCTIONS MOCK
+    const secureSixDigitNumberMock = mock(() => AUTH_MOCKS.recoverNumber);
+
+    mock.module("../../src/utils/secureSixDigitNumber.ts", () => ({
+        secureSixDigitNumber: secureSixDigitNumberMock
+    }));
+
+    const sendMailMock = mock();
+
+    mock.module("../../src/utils/sendMail.ts", () => ({
+        sendMail: sendMailMock
     }));
 
     const appHandlerSpy = spyOn(app, 'handle');
@@ -51,8 +57,6 @@ describe('Test api/auth endpoint', () => {
         const loginPath = `${baseUrl}/login`
 
         const loginInvalidResponse = "Invalid email or password"
-
-
 
         test('Login successfull', async () => {
 
@@ -143,7 +147,7 @@ describe('Test api/auth endpoint', () => {
             expect(appHandlerSpy).toHaveBeenCalledTimes(1);
         });
 
-        test('Should Logout successfully',async  () => {
+        test('Should Logout successfully', async () => {
             const response = await app.handle(new Request(logoutPath));
 
             const cookies: any = response.headers.get('set-cookie');
@@ -152,6 +156,69 @@ describe('Test api/auth endpoint', () => {
             expect(appHandlerSpy).toHaveBeenCalled();
             expect(appHandlerSpy).toHaveBeenCalledTimes(1);
         });
-    })
+    });
+
+    describe('api/auth/generate-recovery-code path', () => {
+
+        const generateRecoveryCodePath = `${baseUrl}/generate-recovery-code`;
+
+        test('Should generate-recovery-code resolve successfully', async () => {
+            sendMailMock.mockResolvedValue(true);
+
+            const response = await app.handle(new Request(generateRecoveryCodePath, {
+                body: JSON.stringify({ email: AUTH_MOCKS.email }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(responseJson.success).toBeTrue();
+            expect(appHandlerSpy).toHaveBeenCalled();
+            expect(appHandlerSpy).toHaveBeenCalledTimes(1);
+            expect(sendMailMock).toHaveBeenCalled()
+        });
+
+        test('Should fail if wrong email, user not exists', async () => {
+
+            const response = await app.handle(new Request(generateRecoveryCodePath, {
+                body: JSON.stringify({ email: "wrong_email@mail.com" }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(400);
+            expect(responseJson.success).toBeFalse();
+            expect(responseJson.error.message).toBe('Invalid email or password');
+            expect(sendMailMock).not.toHaveBeenCalled();
+        });
+
+        test('Should response 500 if sendMail fail', async () => {
+
+            sendMailMock.mockResolvedValue( false );
+
+            const response = await app.handle(new Request(generateRecoveryCodePath, {
+                body: JSON.stringify({ email: AUTH_MOCKS.email }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            expect( response.status ).toBe(500);
+            expect(responseJson.success).toBeFalse();
+            expect( responseJson.error.message).toBe('Error at sending recover password code');
+        });
+
+    });
 
 });

@@ -72,7 +72,7 @@ export class AuthService {
             to: user.email,
             vars: { recover_code: recoverNumber }
         });
-
+        
         if (!isEmailSended) {
             throw status(500,{
                 success: false,
