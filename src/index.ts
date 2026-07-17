@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import api from "./api";
 
-const app = new Elysia()
+export const app = new Elysia()
   .get("/", () => "Hello Elysia")
   .use(api)
   .listen(3000);

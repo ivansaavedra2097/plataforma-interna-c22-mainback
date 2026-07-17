@@ -12,13 +12,19 @@ export class AuthService {
         });
 
         if (!user) {
-            throw status(400, `Invalid email or password` satisfies AuthModel['loginInvalid'])
+            throw status(400, {
+                success: false,
+                error: { message: `Invalid email or password` satisfies AuthModel['loginInvalid'] }
+            });
         }
 
         const isValidPassword = Bun.password.verifySync(`${password}`, user.password);
 
         if (!isValidPassword) {
-            throw status(400, `Invalid email or password` satisfies AuthModel['loginInvalid'])
+            throw status(400, {
+                success: false,
+                error: { message: `Invalid email or password` satisfies AuthModel['loginInvalid'] }
+            });
         }
 
         return {
@@ -37,7 +43,10 @@ export class AuthService {
         });
 
         if (!user) {
-            throw status(400, 'Invalid email or password' satisfies AuthModel['generateRecoverCodeInvalid'])
+            throw status(400,{
+                success: false,
+                error: { message: 'Invalid email or password' satisfies AuthModel['generateRecoverCodeInvalid'] }
+            })
         }
 
         const recoverNumber = secureSixDigitNumber();
@@ -46,14 +55,16 @@ export class AuthService {
             where: { user_id: user.id }
         });
 
-        if( existingValidationCode ) {
-            await prisma.userValidationCode.delete({ where: { id: existingValidationCode.id }});
+        if (existingValidationCode) {
+            await prisma.userValidationCode.delete({ where: { id: existingValidationCode.id } });
         }
 
-        await prisma.userValidationCode.create({ data: {
-            code: Bun.password.hashSync(String(recoverNumber)),
-            user_id: user.id
-        }});
+        await prisma.userValidationCode.create({
+            data: {
+                code: Bun.password.hashSync(String(recoverNumber)),
+                user_id: user.id
+            }
+        });
 
         const isEmailSended = await sendMail({
             fileName: 'recover-paassword-email',
@@ -62,42 +73,47 @@ export class AuthService {
             vars: { recover_code: recoverNumber }
         });
 
-        if(!isEmailSended ) {
-            throw status(500, 'Error at sending recover password code');
+        if (!isEmailSended) {
+            throw status(500,{
+                success: false,
+                error: { message: 'Error at sending recover password code' }
+            });
         }
     }
 
-    static async validateRecoverPasswordCode({ code, email }: AuthModel['validateRecoverPasswordCodeBody']){
+    static async validateRecoverPasswordCode({ code, email }: AuthModel['validateRecoverPasswordCodeBody']) {
 
         const validationCode = await prisma.userValidationCode.findFirst({
             where: { user: { email } }
         });
 
-        if( !validationCode ) throw status(404,'El código expiró o es incorrecto');
+        if (!validationCode) throw status(404, 'El código expiró o es incorrecto');
 
-        const isValid = Bun.password.verifySync(`${code}`, validationCode.code );
+        const isValid = Bun.password.verifySync(`${code}`, validationCode.code);
 
-        if( !isValid ) throw status(404,'El código expiró o es incorrecto');
+        if (!isValid) throw status(404, 'El código expiró o es incorrecto');
 
-        await prisma.userValidationCode.delete({ where: { id: validationCode.id }});
+        await prisma.userValidationCode.delete({ where: { id: validationCode.id } });
 
         return { user_id: validationCode.user_id }
     }
 
-    static async recoverPassword({ password, repassword, user_id }: AuthModel['recoverPasswordBody']){
-          const user = await prisma.user.findUnique({
+    static async recoverPassword({ password, repassword, user_id }: AuthModel['recoverPasswordBody']) {
+        const user = await prisma.user.findUnique({
             where: { id: user_id }
         });
 
-        if( !user ) throw status(400);
+        if (!user) throw status(400);
 
-        if( password !== repassword ) {
+        if (password !== repassword) {
             throw status(400, 'Las contraseñas no coinciden');
         }
 
-        const updatedUser = await prisma.user.update({ where: { id: user_id }, data: {
-            password: Bun.password.hashSync(password)
-        }});
+        const updatedUser = await prisma.user.update({
+            where: { id: user_id }, data: {
+                password: Bun.password.hashSync(password)
+            }
+        });
 
         return {
             id: updatedUser.id,
@@ -105,6 +121,24 @@ export class AuthService {
             name: updatedUser.name,
             createdAt: updatedUser.createdAt,
             updatedAt: updatedUser.updatedAt
+        }
+    }
+
+    static async getCurrentUser({ user_id }: AuthModel['currentUserBody']) {
+        const user = await prisma.user.findUnique({
+            where: { id: user_id }
+        });
+
+        if (!user) {
+            throw status(404, 'No se encontró el usuario');
+        }
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
         }
     }
 }
