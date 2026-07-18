@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, Mock, mock, spyOn, test } from "bun:test";
+import { afterEach, beforeAll, describe, expect, Mock, mock, setSystemTime, spyOn, test } from "bun:test";
 import { app } from "../../src";
-import { AUTH_MOCKS, ValidationCodeMock } from "./mocks/auth";
+import { AUTH_MOCKS, UserMock, ValidationCodeMock } from "./mocks/auth";
+import { authJwt } from "../../src/api/auth";
 
 const userMock = {
     id: 'asdfasgasgdasdg',
@@ -17,9 +18,8 @@ describe('Test api/auth endpoint', () => {
     mock.module("../../src/prisma/db", () => ({
         prisma: {
             user: {
-                findUnique: mock(({ where: { email } }) => Promise.resolve(
-                    email === userMock.email ? userMock : null
-                ))
+                findUnique: UserMock.findUnique,
+                update: UserMock.update
             },
             userValidationCode: {
                 findUnique: ValidationCodeMock.findUnique,
@@ -52,6 +52,12 @@ describe('Test api/auth endpoint', () => {
     const baseUrl = 'http://localhost:3000/api/auth';
     const email = userMock.email;
     const password = "123456";
+
+    beforeAll(() => {
+        setSystemTime(new Date("2020-01-01T00:00:00.000Z"));
+    });
+
+
 
     describe('api/auth/login path', () => {
 
@@ -279,6 +285,66 @@ describe('Test api/auth endpoint', () => {
     });
 
     describe('api/auth/recover-password path', () => {
-        
+
+        test('Should recover password success', async () => {
+            const token = await authJwt.decorator.authJwt.sign({ value: AUTH_MOCKS.user.id, exp: '5m' });
+
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.RECOVER_PASSWORD, {
+                body: JSON.stringify({ password: '1234567', repassword: '1234567' }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': `${AUTH_MOCKS.COOKIES.RECOVER_TOKEN}${token}`
+                }
+            }));
+
+            const cookies = response.headers.get('set-cookie');
+
+            const responseJson = await response.json();
+
+            const recievedUser = { ...responseJson.data }
+            delete recievedUser.password;
+
+            expect(response.status).toBe(200);
+            expect(responseJson.success).toBeTrue();
+            expect(responseJson.data).toEqual(recievedUser);
+            expect(cookies).toContain('auth=');
+        });
+
+        test('Should send 408 if recoverToken cookie not exists', async () => {
+
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.RECOVER_PASSWORD, {
+                body: JSON.stringify({ password: '1234567', repassword: '1234567' }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(408);
+            expect(responseJson.success).toBeFalse();
+            expect(responseJson.error.message).toBe('El código expiró o es incorrecto');
+        });
+
+        test('Should fail if both passwords are not equal', async () => {
+            const token = await authJwt.decorator.authJwt.sign({ value: AUTH_MOCKS.user.id, exp: '5m' });
+
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.RECOVER_PASSWORD, {
+                body: JSON.stringify({ password: '1234590', repassword: '1234567' }),
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cookie': `${AUTH_MOCKS.COOKIES.RECOVER_TOKEN}${token}`
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(400);
+            expect(responseJson.success).toBeFalse();
+            expect(responseJson.error.message).toBe('Las contraseñas no coinciden');
+        });
     })
 });

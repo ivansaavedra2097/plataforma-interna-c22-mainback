@@ -4,7 +4,7 @@ import jwt from "@elysia/jwt";
 import { toDate } from "date-fns";
 import { AuthModelValidations } from "../modules/auth/model";
 
-const authJwt = jwt({
+export const authJwt = jwt({
     name: 'authJwt',
     secret: process.env.JWT_SECRET!,
     exp: '8h'
@@ -48,16 +48,19 @@ export const authRoutes = new Elysia()
             .post('/recover-password', async ({ authJwt, body: { password, repassword }, cookie: { recoverToken, auth }, status }) => {
                 const verifiedToken = await authJwt.verify(recoverToken?.value || "");
 
-                if (!verifiedToken) return status(408, 'El código expiró o es incorrecto');
+                if (!verifiedToken) return status(408,{ 
+                    success: false,
+                    error: { message: 'El código expiró o es incorrecto' }
+                });
 
-                const user = await AuthService.recoverPassword({ password, repassword, user_id: verifiedToken.value.user_id });
-
+                const user = await AuthService.recoverPassword({ password, repassword, user_id: verifiedToken.value });
+                
                 recoverToken.remove();
 
                 const token = await authJwt.sign({ value: user.id });
                 auth.value = token;
 
-                return status(200, { user, token });
+                return status(200, { success: true, data: user, token });
             }, AuthModelValidations.recoverPassword)
 
 

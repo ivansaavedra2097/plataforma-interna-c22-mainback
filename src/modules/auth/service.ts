@@ -109,10 +109,16 @@ export class AuthService {
             where: { id: user_id }
         });
 
-        if (!user) throw status(400);
+        if (!user) throw status(400, {
+            success: false,
+            error: { message: 'El usuario o el código es incorrecto' }
+        });
 
         if (password !== repassword) {
-            throw status(400, 'Las contraseñas no coinciden');
+            throw status(400,{
+                success: false,
+                error: { message: 'Las contraseñas no coinciden' }
+            });
         }
 
         const updatedUser = await prisma.user.update({

@@ -7,8 +7,8 @@ const user_id = "123e4567-e89b-42d3-a456-426614174000";
 const email = 'admin@mail.com';
 const recoverNumber = 123456;
 const hashedRecoverNumber = Bun.password.hashSync(String(recoverNumber));
-const authCookie = 'auth=adfasdfasdfasdfasdf'
-const recoverTokenCookie = 'recoverToken=adfasdfasdfasdfasdf'
+const authCookie = 'auth='
+const recoverTokenCookie = 'recoverToken='
 
 export const AUTH_MOCKS = {
     authCookie,
@@ -58,12 +58,27 @@ export const ValidationCodeMock = {
         }
     }),
 
-    findFirst: mock(({ where: { user: { email }}}) => {
-        if( email === AUTH_MOCKS.email) {
+    findFirst: mock(({ where: { user: { email } } }) => {
+        if (email === AUTH_MOCKS.email) {
             return Promise.resolve(AUTH_MOCKS.validationCode);
         }
         return Promise.resolve(null);
     }),
 }
 
-export const sendRecoverEmailMockFail = mock(() => false );
+export const UserMock = {
+    findUnique: mock(({ where: { email, id } }) => {
+        if( email && email === AUTH_MOCKS.email ) return Promise.resolve(AUTH_MOCKS.user);
+        if( id && id === AUTH_MOCKS.user.id ) {
+            return Promise.resolve(AUTH_MOCKS.user)
+        }
+    }),
+
+    update: mock(({ where: { id }}) => {
+        if( id === AUTH_MOCKS.user.id ){
+            return Promise.resolve(AUTH_MOCKS.user);
+        }
+    })
+}
+
+export const sendRecoverEmailMockFail = mock(() => false);
