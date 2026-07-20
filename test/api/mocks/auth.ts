@@ -35,6 +35,7 @@ export const AUTH_MOCKS = {
         GENERATE_RECOVER_CODE: `${baseUrl}/api/auth/generate-recovery-code`,
         VALIDATE_RECOVER_CODE: `${baseUrl}/api/auth/validate-recovery-code`,
         RECOVER_PASSWORD: `${baseUrl}/api/auth/recover-password`,
+        CURRENT_USER: `${baseUrl}/api/auth/current-user`
     },
     COOKIES: {
         AUTH: authCookie,

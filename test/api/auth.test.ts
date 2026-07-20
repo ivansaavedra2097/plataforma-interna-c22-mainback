@@ -30,34 +30,35 @@ describe('Test api/auth endpoint', () => {
         }
     }));
 
-    //*FUNCTIONS MOCK
+    //*SIX DIGIT FUNCTION MOCK
     const secureSixDigitNumberMock = mock(() => AUTH_MOCKS.recoverNumber);
 
     mock.module("../../src/utils/secureSixDigitNumber.ts", () => ({
         secureSixDigitNumber: secureSixDigitNumberMock
     }));
 
+    //*SEND MAIL MOCK
     const sendMailMock = mock();
 
     mock.module("../../src/utils/sendMail.ts", () => ({
         sendMail: sendMailMock
     }));
 
+    //*DAPP HANDLER SPY
     const appHandlerSpy = spyOn(app, 'handle');
+
+    //*CONSTANTS
+    const baseUrl = 'http://localhost:3000/api/auth';
+    const email = userMock.email;
+    const password = "123456";
 
     afterEach(() => {
         mock.clearAllMocks();
     });
 
-    const baseUrl = 'http://localhost:3000/api/auth';
-    const email = userMock.email;
-    const password = "123456";
-
     beforeAll(() => {
         setSystemTime(new Date("2020-01-01T00:00:00.000Z"));
     });
-
-
 
     describe('api/auth/login path', () => {
 
@@ -346,5 +347,35 @@ describe('Test api/auth endpoint', () => {
             expect(responseJson.success).toBeFalse();
             expect(responseJson.error.message).toBe('Las contraseñas no coinciden');
         });
-    })
+    });
+
+    describe('api/auth/current-user path', () => {
+        test('Should get current-user successfully ', async () => {
+            const token = await authJwt.decorator.authJwt.sign({ value: AUTH_MOCKS.user.id, exp: '8h' });
+
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.CURRENT_USER, {
+                headers: {
+                    'Cookie': `${AUTH_MOCKS.COOKIES.AUTH}${token}`
+                }
+            }));
+
+            const responseJson = await response.json();
+
+            const recievedUser = { ...responseJson.data };
+            delete recievedUser.password;
+
+            expect(response.status).toBe(200);
+            expect(responseJson.success).toBeTrue();
+            expect(responseJson.data).toEqual(recievedUser)
+        });
+
+        test('Should fail if the auth token does not exists', async () => {
+            const response = await app.handle(new Request(AUTH_MOCKS.API_PATHS.CURRENT_USER));
+            const responseJson = await response.json();
+
+            expect(response.status).toBe(401);
+            expect(responseJson.success).toBeFalse();
+            expect(responseJson.error.message).toBe('Expiró la sesión');
+        });
+    });
 });

@@ -67,7 +67,10 @@ export const authRoutes = new Elysia()
             .get('/current-user', async ({ cookie: { auth }, authJwt }) => {
                 const verifiedToken = await authJwt.verify(auth.value);
 
-                if (!verifiedToken) return status(401, 'Expiró la sesión');
+                if (!verifiedToken) return status(401,{
+                    success: false,
+                    error: { message: 'Expiró la sesión'}
+                });
 
                 const user = await AuthService.getCurrentUser({ user_id: verifiedToken.value });
 
