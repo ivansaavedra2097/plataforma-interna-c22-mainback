@@ -4,7 +4,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
-    "seed": "bun seed/index.ts"
+    "seed": "bun seed/index.ts",
+    "prisma:generate": "bunx prisma generate",
+    "prisma:push": "bunx prisma db push",
+    "prisma:migrate": "bunx prisma migrate dev --name",
+    "prisma:studio": "bunx prisma studio"
   },
   "dependencies": {
     "@elysia/eden": "^1.4.10",

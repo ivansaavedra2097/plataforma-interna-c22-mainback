@@ -22,4 +22,9 @@ To test api endpoints we can use different kind of api clients. We're using Brun
 ## ENV
 DATABASE_URL="postgresql://`user`:`password`@`host`:`port`/`database name`?schema=public"
 
+## Prisma
+run `bunx --bun prisma db push` to read actual schema and update db without generating sql and migration files
+run `bunx prisma migrate dev --name add_user_role` to generate a migration with file name
+run `bunx prisma generate` to update model types
+
 Open http://localhost:3000/ with your browser to see the result.

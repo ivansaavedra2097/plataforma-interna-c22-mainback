@@ -3,6 +3,7 @@ import { prisma } from "../../prisma/db";
 import { AuthModel } from "./model";
 import { secureSixDigitNumber } from "../../utils/secureSixDigitNumber";
 import { sendMail } from "../../utils/sendMail";
+import { _normalizeUserData } from "../normalize/user";
 
 export class AuthService {
     static async login({ email, password }: AuthModel['loginBody']) {
@@ -27,13 +28,7 @@ export class AuthService {
             });
         }
 
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-        };
+        return _normalizeUserData( user );
     }
 
     static async generateRecoverCode({ email }: AuthModel['generateRecoverCodeBody']) {
@@ -145,12 +140,6 @@ export class AuthService {
             throw status(404, 'No se encontró el usuario');
         }
 
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-        }
+        return _normalizeUserData(user);
     }
 }
