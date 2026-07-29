@@ -11,6 +11,7 @@
     "prisma:studio": "bunx prisma studio"
   },
   "dependencies": {
+    "@elysia/cors": "^1.4.2",
     "@elysia/eden": "^1.4.10",
     "@elysia/jwt": "^1.4.2",
     "@prisma/adapter-pg": "^7.8.0",

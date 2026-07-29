@@ -7,7 +7,7 @@ import { AuthModelValidations } from "../modules/auth/model";
 export const authJwt = jwt({
     name: 'authJwt',
     secret: process.env.JWT_SECRET!,
-    exp: '8h'
+    exp: '1m'
 });
 
 export const authRoutes = new Elysia()
@@ -48,13 +48,13 @@ export const authRoutes = new Elysia()
             .post('/recover-password', async ({ authJwt, body: { password, repassword }, cookie: { recoverToken, auth }, status }) => {
                 const verifiedToken = await authJwt.verify(recoverToken?.value || "");
 
-                if (!verifiedToken) return status(408,{ 
+                if (!verifiedToken) return status(408, {
                     success: false,
                     error: { message: 'El código expiró o es incorrecto' }
                 });
 
                 const user = await AuthService.recoverPassword({ password, repassword, user_id: verifiedToken.value });
-                
+
                 recoverToken.remove();
 
                 const token = await authJwt.sign({ value: user.id });
@@ -65,16 +65,29 @@ export const authRoutes = new Elysia()
 
 
             .get('/current-user', async ({ cookie: { auth }, authJwt }) => {
-                const verifiedToken = await authJwt.verify(auth.value);
 
-                if (!verifiedToken) return status(401,{
-                    success: false,
-                    error: { message: 'Expiró la sesión'}
-                });
+                console.log({ auth: auth.value })
+
+                if( !auth.value ) {
+                      return status(401, {
+                        success: false,
+                        error: { message: 'Tu sesión ha expirado', isSessionExpired: false }
+                    });
+                }
+
+                const verifiedToken = await authJwt.verify(auth.value);
+                
+                if (!verifiedToken) {
+                    auth?.remove();
+                    return status(401, {
+                        success: false,
+                        error: { message: 'Tu sesión ha expirado', isSessionExpired: true }
+                    });
+                }
 
                 const user = await AuthService.getCurrentUser({ user_id: verifiedToken.value });
 
                 return status(200, { success: true, data: user });
 
-            }, AuthModelValidations.currentUser )
+            }, AuthModelValidations.currentUser)
     );

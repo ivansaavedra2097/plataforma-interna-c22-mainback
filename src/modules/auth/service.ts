@@ -74,6 +74,8 @@ export class AuthService {
                 error: { message: 'Error at sending recover password code' }
             });
         }
+
+        return status(204);
     }
 
     static async validateRecoverPasswordCode({ code, email }: AuthModel['validateRecoverPasswordCodeBody']) {
