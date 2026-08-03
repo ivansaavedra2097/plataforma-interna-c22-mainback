@@ -9,7 +9,11 @@ export class AuthService {
     static async login({ email, password }: AuthModel['loginBody']) {
 
         const user = await prisma.user.findUnique({
-            where: { email }
+            where: { email },
+            include: {
+                roles: { include: { role: true } },
+                platform_modules: { include: { platform_module: true } }
+            }
         });
 
         if (!user) {
@@ -28,7 +32,7 @@ export class AuthService {
             });
         }
 
-        return _normalizeUserData( user );
+        return _normalizeUserData(user);
     }
 
     static async generateRecoverCode({ email }: AuthModel['generateRecoverCodeBody']) {
@@ -102,7 +106,7 @@ export class AuthService {
     }
 
     static async recoverPassword({ password, repassword, user_id }: AuthModel['recoverPasswordBody']) {
-        
+
         const user = await prisma.user.findUnique({
             where: { id: user_id }
         });
@@ -113,7 +117,7 @@ export class AuthService {
         });
 
         if (password !== repassword) {
-            throw status(400,{
+            throw status(400, {
                 success: false,
                 error: { message: 'Las contraseñas no coinciden' }
             });
@@ -122,15 +126,23 @@ export class AuthService {
         const updatedUser = await prisma.user.update({
             where: { id: user_id }, data: {
                 password: Bun.password.hashSync(password)
+            },
+            include: {
+                roles: { include: { role: true } },
+                platform_modules: { include: { platform_module: true } }
             }
         });
 
-        return _normalizeUserData( updatedUser );
+        return _normalizeUserData(updatedUser);
     }
 
     static async getCurrentUser({ user_id }: AuthModel['currentUserBody']) {
         const user = await prisma.user.findUnique({
-            where: { id: user_id }
+            where: { id: user_id },
+            include: {
+                roles: { include: { role: true } },
+                platform_modules: { include: { platform_module: true } }
+            }
         });
 
         if (!user) {

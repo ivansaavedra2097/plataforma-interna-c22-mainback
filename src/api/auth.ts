@@ -66,8 +66,6 @@ export const authRoutes = new Elysia()
 
             .get('/current-user', async ({ cookie: { auth }, authJwt }) => {
 
-                console.log({ auth: auth.value })
-
                 if( !auth.value ) {
                       return status(401, {
                         success: false,

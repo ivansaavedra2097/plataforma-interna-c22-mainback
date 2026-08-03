@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale"
-import { User } from "../../generated/prisma/client"
+import { Prisma, User } from "../../generated/prisma/client"
 
 export type UserDataType = {
     id: String;
@@ -9,17 +9,34 @@ export type UserDataType = {
     active: Boolean;
     createdAt: String;
     updatedAt: String;
+    role: String | null,
+    modules: { id: Number, name: String }[]
 }
 
-export const _normalizeUserData = (user: User): UserDataType => {
+export type UserWithRelations = Prisma.UserGetPayload<{
+    include: {
+        platform_modules: { select: {platform_module: true}},
+        roles: { select: { role: true } }
+    }
+}>
 
-    const formatedCreatedAt = format(user.createdAt, `dd/MM/yyyy HH:mm:ss`,{
+export const _normalizeUserData = (user: UserWithRelations): UserDataType => {
+
+    console.log({ user, role: user.roles, modules: user.platform_modules })
+
+    let role = null;
+
+    const formatedCreatedAt = format(user.createdAt, `dd/MM/yyyy HH:mm:ss`, {
         locale: es
     });
 
-    const formatedUpdatedAt = format(user.createdAt, `dd/MM/yyyy HH:mm:ss`,{
+    const formatedUpdatedAt = format(user.createdAt, `dd/MM/yyyy HH:mm:ss`, {
         locale: es
     });
+
+    if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
+        role = user.roles[0].role.name
+    }
 
     return {
         id: user.id,
@@ -27,6 +44,11 @@ export const _normalizeUserData = (user: User): UserDataType => {
         email: user.email,
         createdAt: formatedCreatedAt,
         updatedAt: formatedUpdatedAt,
-        active: user.active
+        active: user.active,
+        role,
+        modules: user.platform_modules.map(module => ({
+            id: module.platform_module.id,
+            name: module.platform_module.name
+        }))
     }
 }
