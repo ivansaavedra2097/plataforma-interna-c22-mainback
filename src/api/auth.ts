@@ -38,7 +38,7 @@ export const authRoutes = new Elysia()
 
 
             .post('/validate-recovery-code', async ({ authJwt, body, cookie: { recoverToken } }) => {
-                const user_id = await AuthService.validateRecoverPasswordCode(body);
+                const { user_id }= await AuthService.validateRecoverPasswordCode(body);
                 const jwtRecoverToken = await authJwt.sign({ value: user_id, exp: '5m' });
                 recoverToken.value = jwtRecoverToken;
                 return status(200, { success: true });
@@ -52,7 +52,7 @@ export const authRoutes = new Elysia()
                     success: false,
                     error: { message: 'El código expiró o es incorrecto' }
                 });
-
+                
                 const user = await AuthService.recoverPassword({ password, repassword, user_id: verifiedToken.value });
 
                 recoverToken.remove();

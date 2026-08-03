@@ -102,6 +102,7 @@ export class AuthService {
     }
 
     static async recoverPassword({ password, repassword, user_id }: AuthModel['recoverPasswordBody']) {
+        
         const user = await prisma.user.findUnique({
             where: { id: user_id }
         });
@@ -124,13 +125,7 @@ export class AuthService {
             }
         });
 
-        return {
-            id: updatedUser.id,
-            email: updatedUser.email,
-            name: updatedUser.name,
-            createdAt: updatedUser.createdAt,
-            updatedAt: updatedUser.updatedAt
-        }
+        return _normalizeUserData( updatedUser );
     }
 
     static async getCurrentUser({ user_id }: AuthModel['currentUserBody']) {
