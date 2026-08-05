@@ -3,7 +3,7 @@ import { prisma } from "../../prisma/db";
 import { AuthModel } from "./model";
 import { secureSixDigitNumber } from "../../utils/secureSixDigitNumber";
 import { sendMail } from "../../utils/sendMail";
-import { _normalizeUserData } from "../normalize/user";
+import { _normalizeUserData, UserDataType, UserWithRelations } from "../normalize/user";
 
 export class AuthService {
     static async login({ email, password }: AuthModel['loginBody']) {
@@ -136,7 +136,7 @@ export class AuthService {
         return _normalizeUserData(updatedUser);
     }
 
-    static async getCurrentUser({ user_id }: AuthModel['currentUserBody']) {
+    static async getCurrentUser({ user_id }: AuthModel['currentUserBody'])  {
         const user = await prisma.user.findUnique({
             where: { id: user_id },
             include: {
@@ -150,5 +150,21 @@ export class AuthService {
         }
 
         return _normalizeUserData(user);
+    }
+
+    static async getUser({ user_id }: AuthModel['getUser']) {
+        const user = await prisma.user.findUnique({ where: { id: user_id }});
+        return user;
+    }
+
+    static async getUserRoles({ user_id }: AuthModel['getUserRoles']) {
+        console.log({ user_id })
+        const roles = await prisma.userRole.findMany({ 
+            where: { user_id },
+            include: {
+                role: true
+            }
+        });
+        return roles;
     }
 }

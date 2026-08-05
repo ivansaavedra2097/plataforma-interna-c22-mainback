@@ -23,7 +23,9 @@ export const AuthModel = {
     generateRecoverCodeInvalid: t.Literal('Invalid email or password'),
     validateRecoverPasswordCodeBody: t.Object({ code: t.String(), email: t.String({ format: "email" }) }),
     recoverPasswordBody: t.Object({ password: t.String(), repassword: t.String(), user_id: t.String() }),
-    currentUserBody: t.Object({ user_id: t.String() })
+    currentUserBody: t.Object({ user_id: t.String() }),
+    getUser: t.Object({ user_id: t.String() }),
+    getUserRoles: t.Object({ user_id: t.String()})
 } as const
 
 export const AuthModelValidations = {

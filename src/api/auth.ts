@@ -83,7 +83,7 @@ export const authRoutes = new Elysia()
                     });
                 }
 
-                const user = await AuthService.getCurrentUser({ user_id: verifiedToken.value });
+                const user = await AuthService.getCurrentUser({ user_id: verifiedToken.value, isGuard: false });
 
                 return status(200, { success: true, data: user });
 

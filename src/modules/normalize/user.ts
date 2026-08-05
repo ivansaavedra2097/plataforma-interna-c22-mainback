@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale"
-import { Prisma, User } from "../../generated/prisma/client"
+import { Prisma } from "../../generated/prisma/client"
 
 export type UserDataType = {
     id: String;
@@ -15,14 +15,12 @@ export type UserDataType = {
 
 export type UserWithRelations = Prisma.UserGetPayload<{
     include: {
-        platform_modules: { select: {platform_module: true}},
-        roles: { select: { role: true } }
+        roles: { include: { role: true } },
+        platform_modules: { include: { platform_module: true } }
     }
 }>
 
 export const _normalizeUserData = (user: UserWithRelations): UserDataType => {
-
-    console.log({ user, role: user.roles, modules: user.platform_modules })
 
     let role = null;
 

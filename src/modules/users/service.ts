@@ -20,24 +20,23 @@ const managePagination = (itemCount: number, pageSize: number, actualPage: numbe
 
 export class UsersService {
 
-    static async listUsers({ page, pageSize }: UserModelBody['listUsers']) {
-
-        const totalUsers = await prisma.user.count();
-
-        const pagination = managePagination(
-            totalUsers,
-            pageSize,
-            page
-        );
+    static async listUsers({ page, pageSize, active }: UserModelBody['listUsers']) {
 
         const users = await prisma.user.findMany({
-            skip: (pagination.page - 1) * pageSize,
+            skip: (page - 1) * pageSize,
             take: pageSize,
+            where: (active === null ? ({}): { active }),
             include: {
                 roles: { include: { role: true } },
                 platform_modules: { include: { platform_module: true } }
             }
         });
+
+        const pagination = managePagination(
+            users.length,
+            pageSize,
+            page
+        );
 
         return {
             users: users.map( user => _normalizeUserData( user )),
@@ -45,4 +44,5 @@ export class UsersService {
         }
 
     }
+    
 }
