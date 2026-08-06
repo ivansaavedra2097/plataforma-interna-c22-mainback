@@ -23,11 +23,11 @@ export const users = new Elysia()
         app
             .derive(async ({ cookie: { auth }, authJwt }) => {
 
-                const user_id = await authJwt.verify( auth.value );
-                
+                const user_id = await authJwt.verify(auth.value);
+
                 return { user_id: user_id.value };
             })
-            .get('/', async ({ query: { page = 0, pageSize = 10, active = null }}) => {
+            .get('/', async ({ query: { page = 0, pageSize = 10, active = null } }) => {
 
                 const isActive = active === "false" ? false : true;
 
@@ -45,12 +45,12 @@ export const users = new Elysia()
 
             }, UserModelValidation.listUsers)
 
-            .post('/', async({ body, user_id }) => {
+            .post('/', async ({ body, user_id }) => {
 
                 const userRoles = await AuthService.getUserRoles({ user_id });
 
-                if( !userRoles.find( item => item.role?.name === "ADMIN" )) {
-                    return status(401, { success: false, error: { message: "No tienes permisos para realizar esta acción" }});
+                if (!userRoles.find(item => item.role?.name === "ADMIN")) {
+                    return status(401, { success: false, error: { message: "No tienes permisos para realizar esta acción" } });
                 }
 
                 const createdUser = await UsersService.createUser(body);
@@ -63,7 +63,25 @@ export const users = new Elysia()
 
             }, UserModelValidation.createUser)
 
-            .delete('/:user_id', ({ params: { user_id } }) => `Eliminando ${user_id}`)
+            .delete('/:user_id', async ({ params: { user_id }, user_id: id }) => {
+
+                const userRoles = await AuthService.getUserRoles({ user_id: id });
+
+                if (!userRoles.find(item => item.role?.name === "ADMIN")) {
+                    return status(401, { success: false, error: { message: "No tienes permisos para realizar esta acción" } });
+                }
+
+                const response = await UsersService.disableUser({ user_id });
+
+                if( !response ) {
+                    return status(404, { success:false, error: { message: "El usuario no existe o está inactivo" }})
+                }
+
+                return status(200, { 
+                    success: true
+                });
+
+            })
             .put('/:user_id', ({ params: { user_id } }) => `Editando ${user_id}`)
             .patch('/:user_id/profile_pic', ({ params: { user_id } }) => `Añadiendo foto de perfil ${user_id}`)
     )

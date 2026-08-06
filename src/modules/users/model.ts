@@ -17,6 +17,10 @@ export const UserModelBody = {
         password: t.String(),
         phone_numbers: t.Array(t.String({ minLength: 10, maxLength: 10 })),
         roles: t.Array(t.Number())
+    }),
+
+    disableUser: t.Object({
+        user_id: t.String()
     })
 } as const;
 
@@ -45,6 +49,11 @@ export const UserModelValidation = {
             roles: t.Array(t.Number())
         }),
         cookie: t.Cookie({ auth: t.Optional(t.String()) })
+    },
+    disableUser: {
+        query: t.Object({
+            user_id: t.String()
+        })
     }
 }
 

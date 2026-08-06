@@ -1,3 +1,4 @@
+import { status } from "elysia";
 import { prisma } from "../../prisma/db";
 import { _normalizeUserData } from "../normalize/user";
 import { UserModelBody } from "./model";
@@ -78,5 +79,20 @@ export class UsersService {
         //TODO email para informar que el usuario ha sido creado con link a la plataforma
 
         return _normalizeUserData( user );
+    }
+
+    static async disableUser({ user_id }: UserModelBody['disableUser']) {
+
+        const user = await prisma.user.findUnique({ where: { id: user_id }});
+        if( !user || !user?.active ) {
+            return false;
+        }
+
+        await prisma.user.update({ 
+            where: { id: user_id },
+            data: { active: false }
+        });
+
+        return true;
     }
 }
