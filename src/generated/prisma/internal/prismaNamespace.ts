@@ -387,6 +387,7 @@ export const ModelName = {
   User: 'User',
   Role: 'Role',
   PlatformModule: 'PlatformModule',
+  PhoneNumber: 'PhoneNumber',
   UserPlatformModule: 'UserPlatformModule',
   UserValidationCode: 'UserValidationCode',
   UserRole: 'UserRole'
@@ -405,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "role" | "platformModule" | "userPlatformModule" | "userValidationCode" | "userRole"
+    modelProps: "user" | "role" | "platformModule" | "phoneNumber" | "userPlatformModule" | "userValidationCode" | "userRole"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -628,6 +629,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.PlatformModuleCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.PlatformModuleCountAggregateOutputType> | number
+        }
+      }
+    }
+    PhoneNumber: {
+      payload: Prisma.$PhoneNumberPayload<ExtArgs>
+      fields: Prisma.PhoneNumberFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PhoneNumberFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PhoneNumberFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>
+        }
+        findFirst: {
+          args: Prisma.PhoneNumberFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PhoneNumberFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>
+        }
+        findMany: {
+          args: Prisma.PhoneNumberFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>[]
+        }
+        create: {
+          args: Prisma.PhoneNumberCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>
+        }
+        createMany: {
+          args: Prisma.PhoneNumberCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PhoneNumberCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>[]
+        }
+        delete: {
+          args: Prisma.PhoneNumberDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>
+        }
+        update: {
+          args: Prisma.PhoneNumberUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>
+        }
+        deleteMany: {
+          args: Prisma.PhoneNumberDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PhoneNumberUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PhoneNumberUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>[]
+        }
+        upsert: {
+          args: Prisma.PhoneNumberUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PhoneNumberPayload>
+        }
+        aggregate: {
+          args: Prisma.PhoneNumberAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePhoneNumber>
+        }
+        groupBy: {
+          args: Prisma.PhoneNumberGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PhoneNumberGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PhoneNumberCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PhoneNumberCountAggregateOutputType> | number
         }
       }
     }
@@ -895,6 +970,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  surname: 'surname',
   email: 'email',
   password: 'password',
   active: 'active',
@@ -921,6 +997,15 @@ export const PlatformModuleScalarFieldEnum = {
 } as const
 
 export type PlatformModuleScalarFieldEnum = (typeof PlatformModuleScalarFieldEnum)[keyof typeof PlatformModuleScalarFieldEnum]
+
+
+export const PhoneNumberScalarFieldEnum = {
+  id: 'id',
+  phone_number: 'phone_number',
+  user_id: 'user_id'
+} as const
+
+export type PhoneNumberScalarFieldEnum = (typeof PhoneNumberScalarFieldEnum)[keyof typeof PhoneNumberScalarFieldEnum]
 
 
 export const UserPlatformModuleScalarFieldEnum = {
@@ -1145,6 +1230,7 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   role?: Prisma.RoleOmit
   platformModule?: Prisma.PlatformModuleOmit
+  phoneNumber?: Prisma.PhoneNumberOmit
   userPlatformModule?: Prisma.UserPlatformModuleOmit
   userValidationCode?: Prisma.UserValidationCodeOmit
   userRole?: Prisma.UserRoleOmit

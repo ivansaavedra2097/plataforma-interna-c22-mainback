@@ -4,11 +4,13 @@ import { prisma } from "../src/prisma/db";
 const seedAdmins = [
     {
         name: 'admin_01',
+        surname: 'surname dmin',
         password: '123456',
         email: 'admin_01@email.com'
     },
     {
         name: 'admin_02',
+        surname: 'surname dmin',
         password: '123456',
         email: 'admin_02@email.com'
     }
@@ -17,7 +19,8 @@ const seedAdmins = [
 const seedUsers = Array.from({ length: 53 }, (_, index) => {
     const strIndex = `${index}`.padStart(3, '0');
     return {
-        name: `user_${strIndex}`,
+        name: `name ${strIndex}`,
+        surname: `surname ${strIndex}`,
         password: '123456',
         email: `user_${strIndex}@mail.com`
     }
@@ -25,7 +28,25 @@ const seedUsers = Array.from({ length: 53 }, (_, index) => {
 
 const seedRoles = [
     { name: 'ADMIN', description: 'Rol con permisos universales' },
-    { name: 'USER', description: 'Rol temporal' }
+    { name: 'USER', description: 'Rol temporal' },
+    { name: "SUPERVISOR DE ESTUDIO", description: "" },
+    { name: "OP AUDIO", description: "" },
+    { name: "SWITCHER", description: "" },
+    { name: "OP VIDEO", description: "" },
+    { name: "SERVIDOR", description: "" },
+    { name: "OP VIDEOTAPE", description: "" },
+    { name: "OP TELEPROMPTER", description: "" },
+    { name: "GEN DE CARACTÉRES", description: "" },
+    { name: "FLOOR MANAGER", description: "" },
+    { name: "CAMARÓGRAFO", description: "" },
+    { name: "CAM PORTÁTIL", description: "" },
+    { name: "AYUDANTE OP", description: "" },
+    { name: "MICROFONISTA", description: "" },
+    { name: "CHOFER AYUDANTE", description: "" },
+    { name: "ILUMINADOR", description: "" },
+    { name: "AYUDANTE ILUMINACIÓN", description: "" },
+    { name: "OP SET VIRTUAL", description: "" },
+    { name: "UTILERÍA", description: "" },
 ]
 
 const usersWithHashedPassword = [...seedAdmins, ...seedUsers].map(user => ({
@@ -67,7 +88,7 @@ const main = async () => {
             })
 
             await prisma.userPlatformModule.create({
-                data: { user_id: user.id, platform_module_id: user.name.includes('admin') ?platformModules[0].id: platformModules[1].id }
+                data: { user_id: user.id, platform_module_id: user.name.includes('admin') ? platformModules[0].id : platformModules[1].id }
             })
         });
 

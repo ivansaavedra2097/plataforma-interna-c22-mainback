@@ -8,6 +8,15 @@ export const UserModelBody = {
             t.Null(),
             t.Boolean()
         ])
+    }),
+
+    createUser: t.Object({
+        name: t.String(),
+        surname: t.String(),
+        email: t.String({ format: "email" }),
+        password: t.String(),
+        phone_numbers: t.Array(t.String({ minLength: 10, maxLength: 10 })),
+        roles: t.Array(t.Number())
     })
 } as const;
 
@@ -25,6 +34,17 @@ export const UserModelValidation = {
         user: t.Object({
             id: t.String()
         })
+    },
+    createUser: {
+        body: t.Object({
+            name: t.String(),
+            surname: t.String(),
+            email: t.String({ format: "email" }),
+            password: t.String(),
+            phone_numbers: t.Array(t.String({ minLength: 10, maxLength: 10 })),
+            roles: t.Array(t.Number())
+        }),
+        cookie: t.Cookie({ auth: t.Optional(t.String()) })
     }
 }
 

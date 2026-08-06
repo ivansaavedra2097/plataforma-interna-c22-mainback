@@ -11,6 +11,7 @@
 export type * from './models/User.js'
 export type * from './models/Role.js'
 export type * from './models/PlatformModule.js'
+export type * from './models/PhoneNumber.js'
 export type * from './models/UserPlatformModule.js'
 export type * from './models/UserValidationCode.js'
 export type * from './models/UserRole.js'

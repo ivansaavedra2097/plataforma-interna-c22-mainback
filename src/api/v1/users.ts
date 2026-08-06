@@ -45,7 +45,24 @@ export const users = new Elysia()
 
             }, UserModelValidation.listUsers)
 
-            .post('/', 'creando usuario')
+            .post('/', async({ body, user_id }) => {
+
+                const userRoles = await AuthService.getUserRoles({ user_id });
+
+                if( !userRoles.find( item => item.role?.name === "ADMIN" )) {
+                    return status(401, { success: false, error: { message: "No tienes permisos para realizar esta acción" }});
+                }
+
+                const createdUser = await UsersService.createUser(body);
+
+                return status(200, ({
+                    success: true,
+                    data: createdUser
+                }))
+
+
+            }, UserModelValidation.createUser)
+
             .delete('/:user_id', ({ params: { user_id } }) => `Eliminando ${user_id}`)
             .put('/:user_id', ({ params: { user_id } }) => `Editando ${user_id}`)
             .patch('/:user_id/profile_pic', ({ params: { user_id } }) => `Añadiendo foto de perfil ${user_id}`)

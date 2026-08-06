@@ -12,7 +12,8 @@ export class AuthService {
             where: { email },
             include: {
                 roles: { include: { role: true } },
-                platform_modules: { include: { platform_module: true } }
+                platform_modules: { include: { platform_module: true } },
+                phone_numbers: true
             }
         });
 
@@ -129,7 +130,8 @@ export class AuthService {
             },
             include: {
                 roles: { include: { role: true } },
-                platform_modules: { include: { platform_module: true } }
+                platform_modules: { include: { platform_module: true } },
+                phone_numbers: true
             }
         });
 
@@ -141,7 +143,8 @@ export class AuthService {
             where: { id: user_id },
             include: {
                 roles: { include: { role: true } },
-                platform_modules: { include: { platform_module: true } }
+                platform_modules: { include: { platform_module: true } },
+                phone_numbers: true
             }
         });
 
@@ -158,7 +161,7 @@ export class AuthService {
     }
 
     static async getUserRoles({ user_id }: AuthModel['getUserRoles']) {
-        console.log({ user_id })
+        
         const roles = await prisma.userRole.findMany({ 
             where: { user_id },
             include: {

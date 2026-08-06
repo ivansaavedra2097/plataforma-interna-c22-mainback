@@ -57,6 +57,11 @@ export type Role = Prisma.RoleModel
  */
 export type PlatformModule = Prisma.PlatformModuleModel
 /**
+ * Model PhoneNumber
+ * 
+ */
+export type PhoneNumber = Prisma.PhoneNumberModel
+/**
  * Model UserPlatformModule
  * 
  */

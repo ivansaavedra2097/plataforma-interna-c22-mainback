@@ -54,6 +54,7 @@ export const ModelName = {
   User: 'User',
   Role: 'Role',
   PlatformModule: 'PlatformModule',
+  PhoneNumber: 'PhoneNumber',
   UserPlatformModule: 'UserPlatformModule',
   UserValidationCode: 'UserValidationCode',
   UserRole: 'UserRole'
@@ -78,6 +79,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  surname: 'surname',
   email: 'email',
   password: 'password',
   active: 'active',
@@ -104,6 +106,15 @@ export const PlatformModuleScalarFieldEnum = {
 } as const
 
 export type PlatformModuleScalarFieldEnum = (typeof PlatformModuleScalarFieldEnum)[keyof typeof PlatformModuleScalarFieldEnum]
+
+
+export const PhoneNumberScalarFieldEnum = {
+  id: 'id',
+  phone_number: 'phone_number',
+  user_id: 'user_id'
+} as const
+
+export type PhoneNumberScalarFieldEnum = (typeof PhoneNumberScalarFieldEnum)[keyof typeof PhoneNumberScalarFieldEnum]
 
 
 export const UserPlatformModuleScalarFieldEnum = {

@@ -9,20 +9,20 @@ export type UserDataType = {
     active: Boolean;
     createdAt: String;
     updatedAt: String;
-    role: String | null,
+    roles: { id: Number, name: String }[]
     modules: { id: Number, name: String }[]
+    phone_numbers: { id: Number, phone_number: String }[]
 }
 
 export type UserWithRelations = Prisma.UserGetPayload<{
     include: {
         roles: { include: { role: true } },
-        platform_modules: { include: { platform_module: true } }
+        platform_modules: { include: { platform_module: true } },
+        phone_numbers: true
     }
 }>
 
 export const _normalizeUserData = (user: UserWithRelations): UserDataType => {
-
-    let role = null;
 
     const formatedCreatedAt = format(user.createdAt, `dd/MM/yyyy HH:mm:ss`, {
         locale: es
@@ -32,10 +32,6 @@ export const _normalizeUserData = (user: UserWithRelations): UserDataType => {
         locale: es
     });
 
-    if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
-        role = user.roles[0].role.name
-    }
-
     return {
         id: user.id,
         name: user.name,
@@ -43,10 +39,11 @@ export const _normalizeUserData = (user: UserWithRelations): UserDataType => {
         createdAt: formatedCreatedAt,
         updatedAt: formatedUpdatedAt,
         active: user.active,
-        role,
+        roles: user.roles.map(({ role }) => ({ id: role.id, name: role.name })),
         modules: user.platform_modules.map(module => ({
             id: module.platform_module.id,
             name: module.platform_module.name
-        }))
+        })),
+        phone_numbers: user.phone_numbers.map(({ id, phone_number }) => ({ id, phone_number }))
     }
 }

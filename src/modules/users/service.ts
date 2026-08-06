@@ -28,7 +28,8 @@ export class UsersService {
             where: (active === null ? ({}): { active }),
             include: {
                 roles: { include: { role: true } },
-                platform_modules: { include: { platform_module: true } }
+                platform_modules: { include: { platform_module: true } },
+                phone_numbers: true
             }
         });
 
@@ -45,4 +46,37 @@ export class UsersService {
 
     }
     
+    static async createUser({ name, surname, email, password, roles, phone_numbers }:UserModelBody['createUser'] ){
+
+        const hashedPassword = Bun.password.hashSync(password);
+
+        const user = await prisma.user.create({
+            data: { 
+                name, 
+                surname, 
+                email, 
+                active: true,
+                password: hashedPassword,
+                phone_numbers: {
+                    createMany: {
+                        data: phone_numbers.map( num => ({
+                            phone_number: num
+                        }))
+                    }
+                },
+                roles: {
+                    create: roles.map( role_id => ({ role_id }))
+                }
+            },
+            include: {
+                phone_numbers: true,
+                platform_modules: { include: { platform_module: true }},
+                roles: { include: { role: true }}
+            }
+        });
+
+        //TODO email para informar que el usuario ha sido creado con link a la plataforma
+
+        return _normalizeUserData( user );
+    }
 }
