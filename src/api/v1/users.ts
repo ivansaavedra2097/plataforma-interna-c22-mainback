@@ -3,6 +3,7 @@ import { authJwt } from "../auth";
 import { UserModelValidation } from "../../modules/users/model";
 import { UsersService } from "../../modules/users/service";
 import { AuthService } from "../../modules/auth/service";
+import { password } from "bun";
 
 export const users = new Elysia()
     .use(authJwt)
@@ -73,15 +74,51 @@ export const users = new Elysia()
 
                 const response = await UsersService.disableUser({ user_id });
 
-                if( !response ) {
-                    return status(404, { success:false, error: { message: "El usuario no existe o está inactivo" }})
+                if (!response) {
+                    return status(404, { success: false, error: { message: "El usuario no existe o está inactivo" } })
                 }
 
-                return status(200, { 
+                return status(200, {
                     success: true
                 });
 
-            })
-            .put('/:user_id', ({ params: { user_id } }) => `Editando ${user_id}`)
+            }, UserModelValidation.disableUser)
+
+            .put('/:user_id', async ({ params: { user_id }, user_id: id, body }) => {
+                const userRoles = await AuthService.getUserRoles({ user_id: id });
+
+                if (!userRoles.find(item => item.role?.name === "ADMIN")) {
+                    return status(401, { success: false, error: { message: "No tienes permisos para realizar esta acción" } });
+                }
+
+                const updatedUser = await UsersService.updateUser({ user_id, ...body });
+
+                if (!updatedUser) {
+                    return status(404, { success: false, error: { message: "El usuario no existe o está inactivo" } })
+                }
+
+                return status(200, {
+                    success: true,
+                    data: updatedUser
+                })
+
+            }, UserModelValidation.updateUser)
+
+            .patch('/:user_id/reset-password', async ({ user_id: id, body: { password, repassword }, params: { user_id } }) => {
+                const userRoles = await AuthService.getUserRoles({ user_id: id });
+
+                if (!userRoles.find(item => item.role?.name === "ADMIN")) {
+                    return status(401, { success: false, error: { message: "No tienes permisos para realizar esta acción" } });
+                }
+
+                const updatedUser = await AuthService.recoverPassword({ password, repassword, user_id });
+
+                return status(200, { 
+                    success: true,
+                    data: updatedUser
+                });
+
+            }, UserModelValidation.resetPasswordUser )
+
             .patch('/:user_id/profile_pic', ({ params: { user_id } }) => `Añadiendo foto de perfil ${user_id}`)
     )

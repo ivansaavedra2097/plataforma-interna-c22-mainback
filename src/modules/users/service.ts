@@ -26,7 +26,7 @@ export class UsersService {
         const users = await prisma.user.findMany({
             skip: (page - 1) * pageSize,
             take: pageSize,
-            where: (active === null ? ({}): { active }),
+            where: (active === null ? ({}) : { active }),
             include: {
                 roles: { include: { role: true } },
                 platform_modules: { include: { platform_module: true } },
@@ -41,58 +41,92 @@ export class UsersService {
         );
 
         return {
-            users: users.map( user => _normalizeUserData( user )),
+            users: users.map(user => _normalizeUserData(user)),
             pagination
         }
 
     }
-    
-    static async createUser({ name, surname, email, password, roles, phone_numbers }:UserModelBody['createUser'] ){
+
+    static async createUser({ name, surname, email, password, roles, phone_numbers }: UserModelBody['createUser']) {
 
         const hashedPassword = Bun.password.hashSync(password);
 
         const user = await prisma.user.create({
-            data: { 
-                name, 
-                surname, 
-                email, 
+            data: {
+                name,
+                surname,
+                email,
                 active: true,
                 password: hashedPassword,
                 phone_numbers: {
                     createMany: {
-                        data: phone_numbers.map( num => ({
+                        data: phone_numbers.map(num => ({
                             phone_number: num
                         }))
                     }
                 },
                 roles: {
-                    create: roles.map( role_id => ({ role_id }))
+                    create: roles.map(role_id => ({ role_id }))
                 }
             },
             include: {
                 phone_numbers: true,
-                platform_modules: { include: { platform_module: true }},
-                roles: { include: { role: true }}
+                platform_modules: { include: { platform_module: true } },
+                roles: { include: { role: true } }
             }
         });
 
         //TODO email para informar que el usuario ha sido creado con link a la plataforma
 
-        return _normalizeUserData( user );
+        return _normalizeUserData(user);
     }
 
     static async disableUser({ user_id }: UserModelBody['disableUser']) {
 
-        const user = await prisma.user.findUnique({ where: { id: user_id }});
-        if( !user || !user?.active ) {
+        const user = await prisma.user.findUnique({ where: { id: user_id } });
+        if (!user || !user?.active) {
             return false;
         }
 
-        await prisma.user.update({ 
+        await prisma.user.update({
             where: { id: user_id },
             data: { active: false }
         });
 
         return true;
+    }
+
+    static async updateUser({ user_id, name, surname, email, roles, phone_numbers }: UserModelBody['updateUser']) {
+
+        const user = await prisma.user.findUnique({ where: { id: user_id } });
+
+        if (!user || !user.active) {
+            return false;
+        }
+
+
+        const updatedUser = await prisma.user.update({
+            where: { id: user_id },
+            data: {
+                name,
+                surname,
+                email,
+                roles: {
+                    deleteMany: {},
+                    create: roles.map(role_id => ({ role_id }))
+                },
+                phone_numbers: {
+                    deleteMany: {},
+                    create: phone_numbers.map(phone_number => ({ phone_number }))
+                }
+            },
+            include: {
+                phone_numbers: true,
+                platform_modules: { include: { platform_module: true } },
+                roles: { include: { role: true } }
+            }
+        });
+
+        return _normalizeUserData(updatedUser); 
     }
 }

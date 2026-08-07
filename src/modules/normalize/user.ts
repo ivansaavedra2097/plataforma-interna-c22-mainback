@@ -28,7 +28,7 @@ export const _normalizeUserData = (user: UserWithRelations): UserDataType => {
         locale: es
     });
 
-    const formatedUpdatedAt = format(user.createdAt, `dd/MM/yyyy HH:mm:ss`, {
+    const formatedUpdatedAt = format(user.updatedAt, `dd/MM/yyyy HH:mm:ss`, {
         locale: es
     });
 

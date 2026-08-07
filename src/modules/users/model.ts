@@ -20,8 +20,18 @@ export const UserModelBody = {
     }),
 
     disableUser: t.Object({
-        user_id: t.String()
+        user_id: t.String({ format: "uuid" })
+    }),
+
+    updateUser: t.Object({
+        user_id: t.String({ format: "uuid" }),
+        name: t.String(),
+        surname: t.String(),
+        email: t.String({ format: "email" }),
+        phone_numbers: t.Array(t.String({ minLength: 10, maxLength: 10 })),
+        roles: t.Array(t.Number())
     })
+
 } as const;
 
 export const UserModelValidation = {
@@ -53,6 +63,29 @@ export const UserModelValidation = {
     disableUser: {
         query: t.Object({
             user_id: t.String()
+        })
+    },
+
+    updateUser: {
+        body: t.Object({
+            name: t.String(),
+            surname: t.String(),
+            email: t.String({ format: "email" }),
+            phone_numbers: t.Array(t.String({ minLength: 10, maxLength: 10 })),
+            roles: t.Array(t.Number())
+        }),
+        params: t.Object({
+            user_id: t.String({ format: "uuid" })
+        })
+    },
+
+    resetPasswordUser: {
+        body: t.Object({
+            password: t.String(),
+            repassword: t.String()
+        }),
+        params: t.Object({
+            user_id: t.String({ format: "uuid" })
         })
     }
 }
